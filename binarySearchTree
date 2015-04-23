@@ -220,9 +220,7 @@ e
 			System.out.println(tree);
 		}
 		System.out.println("Testing iterator:");
-		/*
-		 * uncomment this. Without an iterator, it throws a NullPointerException
-		 */
+
 		for (Integer i : tree)
 			System.out.println(i);
 
