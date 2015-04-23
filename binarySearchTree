@@ -1,0 +1,230 @@
+import java.util.Iterator;
+import java.util.Scanner;
+import java.util.Stack;
+
+public class binarySearchTree<T extends Comparable<T>> implements Iterable<T> {
+	// the tree consists of Node objects. Each node stores a value,
+	// and left and right children.
+	private class Node<T extends Comparable<T>> {
+		public T val;
+		public Node<T> left;
+		public Node<T> right;
+
+		public Node(T val) {
+			this.val = val;
+			left = right = null;
+		}
+	}
+
+	private Node<T> root = null;
+
+	public String toString() {
+		if (root == null)
+			return "[]";
+		return toStringBuilder(root).toString();
+	}
+
+
+	public StringBuilder toStringBuilder(Node<T> x) {
+		if (x == null)
+			return new StringBuilder("[]");
+		StringBuilder string = new StringBuilder("[");
+		string.append(x.val);
+		if (x.left == null && x.right == null)
+			return string.append("]");
+		string.append(" ");
+		string.append(toStringBuilder(x.left));
+		string.append(" ");
+		string.append(toStringBuilder(x.right));
+		return string.append("]");
+	}
+
+
+	public boolean add(T val) {
+		// special case for the root
+		if (root == null) {
+			root = new Node<T>(val);
+			return true;
+		}
+		Node<T> x = root;
+		int comp = x.val.compareTo(val);
+		while (comp != 0) {
+			if (comp > 0)
+				// comp > 0: the value is added to the left subtree
+				if (x.left == null) {
+					x.left = new Node<T>(val);
+					return true;
+				} else
+					x = x.left;
+			else // comp < 0: value is added to the right subtree
+			if (x.right == null) {
+				x.right = new Node<T>(val);
+				return true;
+			} else
+				x = x.right;
+			comp = x.val.compareTo(val);
+		}
+		return false;
+	}
+
+e
+	public boolean contains(T val) {
+		Node<T> x = root;
+		while (x != null) {
+			int comp = x.val.compareTo(val);
+			if (comp == 0)
+				return true;
+			if (comp > 0)
+				x = x.left;
+			else
+				x = x.right;
+		}
+		return false;
+	}
+
+
+	public boolean remove(T val) {
+		// special case for an empty tree
+		if (root == null)
+			return false;
+		// special case for removing the root
+		int comp = root.val.compareTo(val);
+		if (comp == 0) {
+			root = removeNode(root);
+			return true;
+		}
+		Node<T> x = root;
+		while (x != null) {
+
+			Node<T> child;
+			if (comp > 0) {
+				// comp > 0: remove the value from x's left subtree
+				child = x.left;
+				if (child == null)
+					return false;
+				comp = child.val.compareTo(val);
+				if (comp == 0) {
+					x.left = removeNode(child);
+					return true;
+				}
+			} else { // comp < 0: remove the value from x's right subtree
+				child = x.right;
+				if (child == null)
+					return false;
+				comp = child.val.compareTo(val);
+				if (comp == 0) {
+					x.right = removeNode(child);
+					return true;
+				}
+			}
+			x = child;
+		}
+		return false;
+	}
+
+
+	public Node<T> removeNode(Node<T> x) {
+		Node<T> currentNode = x;
+
+		
+		if (currentNode.left == null && currentNode.right == null) {
+			return null;
+		} else if (currentNode.left != null && currentNode.right == null) {
+			return currentNode.left;
+		} else if (currentNode.left == null && currentNode.right != null) {
+			return currentNode.right;
+		} else {
+			//handles edge case encountered in sample tree
+			if (currentNode.right.left == null) {
+				currentNode.val = currentNode.right.val;
+				currentNode.right = null;
+				return currentNode;
+			}
+
+			Node<T> previousNode = currentNode.right;
+			currentNode = currentNode.right;
+			while (currentNode.left != null) {
+				previousNode = currentNode;
+				currentNode = currentNode.left;
+			 }
+			x.val = currentNode.val;
+			previousNode.left = removeNode(currentNode);
+		}
+
+		return x;}
+	
+
+	private static int random(int max) {
+		return (int) Math.floor(max * Math.random() + .99999999);
+	}
+
+	private class BSTIterator implements Iterator<T> {
+
+		private Stack<Node<T>> nodeStack = new Stack<Node<T>>();
+
+
+		public BSTIterator() {
+			pushMin(root);
+		}
+
+		//initializes to left-most value
+		private void pushMin(Node<T> x) {
+			Node<T> leftchildCheck = x;
+			while (leftchildCheck != null) {
+				nodeStack.push(leftchildCheck);
+				leftchildCheck = leftchildCheck.left;
+			}
+		}
+
+		@Override
+		public boolean hasNext() {
+			// TODO Auto-generated method stub
+			if (nodeStack.isEmpty()==true) {
+				return false;
+			}
+			return true;
+		}
+
+		@Override
+		public T next() {
+			Node<T> nextNode = nodeStack.pop();
+			T value = nextNode.val;
+
+			if (nextNode.right != null) {
+				pushMin(nextNode.right); //searches for left most child of right node
+			}
+			
+
+			return value;
+		}
+
+	}
+
+	public Iterator<T> iterator() {
+		return new BSTIterator();
+	}
+
+	
+	public static void main(String[] args) {
+		BST403<Integer> tree = new BST403<Integer>();
+
+		for (int i = 0; i < 20; i++) {
+			int x = random(20);
+			System.out.println("Add " + x + " " + tree.add(x));
+		}
+		System.out.println(tree);
+		for (int i = 0; i < 10; i++) {
+			int x = random(20);
+			System.out.print("Remove " + x);
+			System.out.println(" " + tree.remove(x));
+			System.out.println(tree);
+		}
+		System.out.println("Testing iterator:");
+		/*
+		 * uncomment this. Without an iterator, it throws a NullPointerException
+		 */
+		for (Integer i : tree)
+			System.out.println(i);
+
+	}
+}
